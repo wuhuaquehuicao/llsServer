@@ -1,0 +1,148 @@
+version: "3"
+services:
+  mysql:
+    image: ${MYSQL_IMAGE}
+    container_name: mysql
+    volumes:
+      - ${CONTAINER_HOME}/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=Justekpwd
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    ports:
+      - "8086:3306"
+
+  php:
+    image: ${PHP_IMAGE}
+    container_name: php
+    volumes:
+      - ${CONTAINER_HOME}/html:/var/www/html 
+      - ${CONTAINER_HOME}/php/conf/php-fpm.conf:/usr/local/etc/php-fpm.conf 
+      - ${CONTAINER_HOME}/php/conf:/usr/local/etc/php/conf.d 
+      - ${CONTAINER_HOME}/php/extensions:/usr/local/lib/php/extensions/no-debug-non-zts-20131226
+
+  tomcat:
+    image: ${TOMCAT_IMAGE}
+    container_name: tomcat
+    volumes:
+      - ${CONTAINER_HOME}/tomcat/conf/portal.xml:/usr/local/tomcat/conf/Catalina/localhost/portal.xml
+      - ${CONTAINER_HOME}/tomcat/conf/server.xml:/usr/local/tomcat/conf/server.xml
+      - ${CONTAINER_HOME}/tomcat/webapps:/usr/local/tomcat/webapps
+      - ${CONTAINER_HOME}/tomcat/logs:/usr/local/tomcat/logs
+      - ${CONTAINER_HOME}/tomcat/ROOT/:/usr/local/tomcat/webapps/ROOT
+
+  jenkins:
+    image: ${JENKINS_IMAGE}
+    container_name: jenkins
+    environment:
+      - JAVA_OPTS=-Xmx1024m
+      - JENKINS_OPTS=--prefix=/jenkins
+    volumes:
+      - ${CONTAINER_HOME}/jenkins:/var/jenkins_home
+      - ${CONTAINER_HOME}/projects:/var/jenkins_home/projects
+      - ${CONTAINER_HOME}/tomcat/webapps:/var/jenkins_home/tomcat
+      - /var/run/docker.sock:/var/jenkins_home/docker.sock
+
+  openresty:
+    image: ${OPENRESTY_IMAGE}
+    container_name: openresty
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONTAINER_HOME}/openresty/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ${CONTAINER_HOME}/openresty/lua:/usr/local/openresty/nginx/lua
+      - ${CONTAINER_HOME}/openresty/lualib:/usr/local/openresty/site/lualib
+      - ${CONTAINER_HOME}/openresty/server.crt:/usr/local/openresty/nginx/server.crt
+      - ${CONTAINER_HOME}/openresty/server.key:/usr/local/openresty/nginx/server.key
+      - ${CONTAINER_HOME}/openresty/logs:/usr/local/openresty/nginx/logs
+      - ${CONTAINER_HOME}/openresty/htpasswd:/usr/local/openresty/nginx/conf/htpasswd
+      - ${CONTAINER_HOME}/html:/var/www/html 
+
+  p1000:
+    privileged: true
+    image: ${OPENJDK_IMAGE}
+    container_name: p1000
+    working_dir: /root/projects
+    command: sh run.sh 1000
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+    sysctls:
+      - net.core.somaxconn=262144
+      - net.ipv4.ip_local_port_range=1024 65000
+
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 40000
+        hard: 40000
+
+    volumes:
+      - ${CONTAINER_HOME}/projects/felyxservlet:/root/projects
+
+  p1002:
+    privileged: true
+    image: ${OPENJDK_IMAGE}
+    container_name: p1002
+    working_dir: /root/projects
+    command: sh run.sh 1002
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+    sysctls:
+      - net.core.somaxconn=262144
+      - net.ipv4.ip_local_port_range=1024 65000
+
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 40000
+        hard: 40000
+
+    volumes:
+      - ${CONTAINER_HOME}/projects/felyxservlet:/root/projects
+
+  redis:
+    privileged: true
+    image: ${REDIS_IMAGE}
+    container_name: redis
+    command: sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled && redis-server /data/redis.conf"
+    sysctls:
+      - net.core.somaxconn=262144
+    ports:
+      - "6379:6379"
+
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 40000
+        hard: 40000
+
+    volumes:
+      - ${CONTAINER_HOME}/redis:/data
+      - ${CONTAINER_HOME}/redis/redis.conf:/data/redis.conf
+
+  rabbitmq:
+    image: ${RABBITMQ_IMAGE}
+    container_name: rabbit
+    command: sh -c "docker-entrypoint.sh rabbitmq-server && rabbitmqctl set_permissions -p / admin \".*\" \".*\" \".*\""
+    working_dir: /var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=Justekpwd
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15674:15674"
+    volumes:
+      - ${CONTAINER_HOME}/rabbitmq:/var/lib/rabbitmq
+

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" name="lssservlet" packages="com.lssservlet.utils">
+	<Appenders>
+		<Console name="LOG_CONSOLE" target="SYSTEM_OUT">
+			<PatternLayout
+				pattern="${sys:app.lssservlet.build.number} %d{MMdd HH:mm:ss.SSS}{${sys:app.lssservlet.log.timezone}} [%thread] %-5level \(%F:%L\) %msg%n" />
+		</Console>
+		<RollingFile name="LOG_LOCK" fileName="${sys:app.lssservlet.log.path}/lock.log" filePattern="${sys:app.lssservlet.log.path}/lock-%d{yyyy-MM-dd}{${sys:app.lssservlet.log.timezone}}-%i.log.gz">
+            <PatternLayout pattern="${sys:app.lssservlet.build.number} %d{MMdd HH:mm:ss.SSS}{${sys:app.lssservlet.log.timezone}} [%thread] %-5level \(%F:%L\) %msg%n" />
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="20 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="200">
+                <Delete basePath="${sys:app.lssservlet.log.path}" maxDepth="1">
+                    <IfFileName glob="lock-*.log.gz" />
+                    <IfAny>
+                        <IfAccumulatedFileSize exceeds="4 GB" />
+                        <IfAccumulatedFileCount exceeds="200" />
+                    </IfAny>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+		<RollingFile name="LOG_DEBUG" fileName="${sys:app.lssservlet.log.path}/debug.log" filePattern="${sys:app.lssservlet.log.path}/debug-%d{yyyy-MM-dd}{${sys:app.lssservlet.log.timezone}}-%i.log.gz">
+			<PatternLayout pattern="${sys:app.lssservlet.build.number} %d{MMdd HH:mm:ss.SSS}{${sys:app.lssservlet.log.timezone}} [%thread] %-5level \(%F:%L\) %msg%n" />
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="20 MB"/>
+            </Policies>
+			<DefaultRolloverStrategy max="200">
+				<Delete basePath="${sys:app.lssservlet.log.path}" maxDepth="1">
+					<IfFileName glob="debug-*.log.gz" />
+                    <IfAny>
+                        <IfAccumulatedFileSize exceeds="4 GB" />
+                        <IfAccumulatedFileCount exceeds="200" />
+                    </IfAny>
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingFile>
+		<RollingFile name="LOG_INFO" fileName="${sys:app.lssservlet.log.path}/info.log" filePattern="${sys:app.lssservlet.log.path}/info-%d{yyyy-MM-dd}{${sys:app.lssservlet.log.timezone}}-%i.log.gz">
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${sys:app.lssservlet.build.number} %d{MMdd HH:mm:ss.SSS}{${sys:app.lssservlet.log.timezone}} [%thread] %-5level \(%F:%L\) %msg%n" />
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="20 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="200">
+                <Delete basePath="${sys:app.lssservlet.log.path}" maxDepth="1">
+                    <IfFileName glob="info-*.log.gz" />
+                    <IfAny>
+                        <IfAccumulatedFileSize exceeds="4 GB" />
+                        <IfAccumulatedFileCount exceeds="200" />
+                    </IfAny>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <RollingFile name="LOG_WARN" fileName="${sys:app.lssservlet.log.path}/warn.log" filePattern="${sys:app.lssservlet.log.path}/warn-%d{yyyy-MM-dd}{${sys:app.lssservlet.log.timezone}}-%i.log.gz">
+            <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${sys:app.lssservlet.build.number} %d{MMdd HH:mm:ss.SSS}{${sys:app.lssservlet.log.timezone}} [%thread] %-5level \(%F:%L\) %msg%n" />
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="20 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="200">
+                <Delete basePath="${sys:app.lssservlet.log.path}" maxDepth="1">
+                    <IfFileName glob="warn-*.log.gz" />
+                    <IfAny>
+                        <IfAccumulatedFileSize exceeds="4 GB" />
+                        <IfAccumulatedFileCount exceeds="200" />
+                    </IfAny>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <Callback name="LOG_CALLBACK" bufferSize="256">
+          <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+          <PatternLayout pattern="${sys:app.lssservlet.build.number} %d{MMdd HH:mm:ss.SSS}{${sys:app.lssservlet.log.timezone}} [%thread] %-5level \(%F:%L\) %msg%n" />
+        </Callback> 
+	</Appenders>
+	<Loggers>
+	    <Logger name="com.lssservlet.lock" level="debug" additivity="false">
+            <AppenderRef ref="LOG_LOCK" />
+        </Logger>
+		<Logger name="com.lssservlet" level="debug" additivity="false">
+			<AppenderRef ref="LOG_CONSOLE" />
+			<AppenderRef ref="LOG_DEBUG" />
+            <AppenderRef ref="LOG_INFO" />
+            <AppenderRef ref="LOG_WARN" />           
+            <AppenderRef ref="LOG_CALLBACK" />
+		</Logger>
+		<Root level="warn">
+            <AppenderRef ref="LOG_CONSOLE" />
+            <AppenderRef ref="LOG_DEBUG" />
+            <AppenderRef ref="LOG_INFO" />
+            <AppenderRef ref="LOG_WARN" />
+            <AppenderRef ref="LOG_CALLBACK" />
+		</Root>
+	</Loggers>
+</Configuration>
